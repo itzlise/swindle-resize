@@ -23,11 +23,17 @@ Swindle is a fork of [dwl](https://codeberg.org/dwl/dwl) that was designed from 
 
 ## Instalation
 
-clone the repo, run sudo/doas make clean install and copy the example config to ~/.config/swindle/config.lua
+clone the repo,
+run sudo/doas make clean install
+copy the example config to ~/.config/swindle/config.lua
 > git clone https://github.com/itzlise/swindle-resize
+> 
 > cd swindle
+> 
 > sudo make clean install
+> 
 > mkdir -p .config/swindle
+> 
 > cp example/config.lua ~/.config/swindle/config.lua
 
 ## Things that are good to have
