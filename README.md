@@ -21,8 +21,14 @@ Swindle is a fork of [dwl](https://codeberg.org/dwl/dwl) that was designed from 
 * wayland-protocols (compile-time only)
 * pkg-config (compile-time only)
 
-Install these (and their `-devel` versions if your distro has separate
-development packages) and run `make` followed by `doas/sudo make install`, if you wish to install it (installs to /usr/local/bin/ by default). 
+## Instalation
+
+clone the repo, run sudo/doas make clean install and copy the example config to ~/.config/swindle/config.lua
+> git clone https://github.com/itzlise/swindle-resize
+> cd swindle
+> sudo make clean install
+> mkdir -p .config/swindle
+> cp example/config.lua ~/.config/swindle/config.lua
 
 ## Things that are good to have
 
@@ -42,10 +48,6 @@ start swindle because it (swindle) won't start without it
 
 ## Checklist
 
-- [ ] separate the trackpad scroll from the mousee scroll 
-- [ ] Add ability to change your keymap
-- [ ] Add animations via [scenefx](https://github.com/wlrfx/scenefx) when 0.5 drops (in another branch)
-- [ ] Add the ability for the compositor to read a custom path for configs
 - [ ] Add /etc/swindle/config.lua as a fallback path if $HOME/.config/swindle/config.lua is not found 
 
 

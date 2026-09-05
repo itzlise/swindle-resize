@@ -3,13 +3,16 @@ bypass_surface_visibility  = false
 log_level                  = "error"  -- "silent", "error", "info", "debug"
 
 appearance = {
-    border_px    = 2,
-    gaps         = 10,     -- 0 = no gaps. simple as.
+    inner_border_px    = 2,
+    outer_border_px    = 3,
+    gaps         = 4,     -- 0 = no gaps. simple as.
     smart_gaps   = false,
 
     root_color   = 0x222222ff,
-    border_color = 0x00000000,
-    focus_color  = 0xe8e8e8ff,
+    outer_border_color = 0x1a1b26ff,
+    inner_border_color = 0x444b6aff,
+    inner_focus_color  = 0xad8ee6ff,
+    outer_focus_color  = 0x1a1b26ff,
     urgent_color = 0xff0000ff,
 
     fullscreen_bg = 0x000000ff,
@@ -19,8 +22,8 @@ appearance = {
 -- Note: the entire input section requires you to restart
 -- the compositor once changed
 input = {
-    repeat_rate             = 50,
-    repeat_delay            = 150,
+    repeat_rate             = 35,
+    repeat_delay            = 200,
     tap_to_click            = true,
     tap_and_drag            = true,
     drag_lock               = true,
@@ -30,7 +33,7 @@ input = {
     middle_button_emulation = false,
     scroll_method           = "2fg",        -- "2fg", "edge", "button"
     click_method            = "button_areas", -- "button_areas", "clickfinger"
-    accel_profile           = "adaptive",   -- "adaptive", "flat"
+    accel_profile           = "flat",   -- "adaptive", "flat"
     accel_speed             = 0.0,
 }
 
@@ -53,32 +56,36 @@ monitors = {
 autostart = {
     "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP",
     "systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP",
-    "waybar",
 }
 
 
 keybinds = {
-    { mods = {"logo"},          key = "q",     action = "spawn",  args = {"alacritty"} },
-    { mods = {"logo"},          key = "space", action = "spawn",  args = {"wofi", "--show", "drun"} },
-    { mods = {"logo"},          key = "w",     action = "killclient" },
-    { mods = {"logo"},          key = "v",     action = "togglefloating" },
-    { mods = {"logo"},          key = "f",     action = "togglefullscreen" },
+    { mods = {"logo"},          key = "b",     action = "spawn",  args = {"firefox"} },
+    { mods = {"logo"},          key = "return",action = "spawn",  args = {"foot"} },
+    { mods = {"logo"},          key = "d",     action = "spawn",  args = {"rofi", "-show", "drun"} },
+    { mods = {"logo"},          key = "q",     action = "killclient" },
+    { mods = {"logo"},          key = "f",     action = "togglefloating" },
+    { mods = {"logo", "shift"}, key = "f",     action = "togglefullscreen" },
     { mods = {"logo"},          key = "g",     action = "togglegaps" },
     { mods = {"logo"},          key = "h",     action = "focusdir",  args = {"left"} },
     { mods = {"logo"},          key = "j",     action = "focusdir",  args = {"down"} },
     { mods = {"logo"},          key = "k",     action = "focusdir",  args = {"up"} },
     { mods = {"logo"},          key = "l",     action = "focusdir",  args = {"right"} },
-    { mods = {"logo", "shift"}, key = "H",     action = "swapdir",   args = {"left"} },
-    { mods = {"logo", "shift"}, key = "J",     action = "swapdir",   args = {"down"} },
-    { mods = {"logo", "shift"}, key = "K",     action = "swapdir",   args = {"up"} },
-    { mods = {"logo", "shift"}, key = "L",     action = "swapdir",   args = {"right"} },
+    { mods = {"logo", "ctrl"},  key = "H",     action = "swapdir",   args = {"left"} },
+    { mods = {"logo", "ctrl"},  key = "J",     action = "swapdir",   args = {"down"} },
+    { mods = {"logo", "ctrl"},  key = "K",     action = "swapdir",   args = {"up"} },
+    { mods = {"logo", "ctrl"},  key = "L",     action = "swapdir",   args = {"right"} },
+    { mods = {"logo", "shift"}, key = "l",     action = "resizehoriz", args = {"0.05"} },
+    { mods = {"logo", "shift"}, key = "h",     action = "resizehoriz", args = {"-0.05"} },
+    { mods = {"logo", "shift"}, key = "k",     action = "resizevert",  args = {"-0.05"} },
+    { mods = {"logo", "shift"}, key = "j",     action = "resizevert",  args = {"0.05"} },
     { mods = {"logo"},          key = "Tab",   action = "view" },
     { mods = {"logo"},          key = "0",     action = "view",      args = {"all"} },
     { mods = {"logo"},          key = "comma",  action = "focusmon", args = {"left"} },
     { mods = {"logo"},          key = "period", action = "focusmon", args = {"right"} },
     { mods = {"logo", "shift"}, key = "less",    action = "tagmon", args = {"left"} },
     { mods = {"logo", "shift"}, key = "greater", action = "tagmon", args = {"right"} },
-    { mods = {"logo", "shift"}, key = "e",     action = "quit" },
+    { mods = {"logo", "shift"}, key = "q",     action = "quit" },
 }
 
 for i = 1, 9 do

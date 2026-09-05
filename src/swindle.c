@@ -197,28 +197,28 @@ typedef struct {
 /* dwindle tree */
 typedef struct DwindleNode DwindleNode;
 struct DwindleNode {
-	DwindleNode   *children[2]; 
+	DwindleNode   *children[2];
 	DwindleNode   *parent;
-	Client        *client;     
+	Client        *client;
 	struct wlr_box box;
 	float          split_ratio;
-	int            split_top; 
-	int            is_node;  
+	int            split_top;
+	int            is_node;
 };
 
 /* which physical edge of its old box a leaf's geometry moved toward/from */
 typedef enum { EDGE_NONE, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM } DwindleEdge;
 
 /* Filled in by dwindle_insert()/dwindle_remove() when a non-NULL hint
- * pointer is passed in*/ 
+ * pointer is passed in*/
 
 /*Left untouched (caller should zero it first) if
  * the operation didn't actually split/collapse anything, i.e. first
  * insert into an empty tree. */
 
 typedef struct {
-	DwindleEdge edge;        
-	struct wlr_box old_box;  
+	DwindleEdge edge;
+	struct wlr_box old_box;
 } DwindleHint;
 
 struct Monitor {
@@ -298,6 +298,8 @@ static void cleanuplisteners(void);
 static void closemon(Monitor *m);
 static void dwindle_free_tree(DwindleNode *n);
 static void dwindle_remove_client(Client *c);
+static void resizehoriz(const Arg *arg);
+static void resizevert(const Arg *arg);
 static void dwindle_insert(DwindleNode **root, Client *new_c, Client *focused, DwindleHint *hint);
 static int dwindle_insert_at_edge(DwindleNode **root, Client *new_c, Client *target, DwindleEdge edge);
 static void dwindle_remove(DwindleNode **root, Client *c, DwindleHint *hint);
@@ -465,7 +467,7 @@ static struct wlr_scene_rect *preselect_indicator;
  not "preserve original size" */
 #define TILEDRAG_DETACH_W 960
 #define TILEDRAG_DETACH_H 540
-static struct wlr_box tiledrag_orig_geom; 
+static struct wlr_box tiledrag_orig_geom;
 
 static struct wlr_output_layout *output_layout;
 static struct wlr_box sgeom;
@@ -1819,7 +1821,7 @@ dispatch_action(const char *action, const char (*args)[CFG_MAX_STRLEN], int narg
 		return;
 	}
 	if (!strcmp(action, "setlayout")) {
-		/* arg is index into layouts[]; "0" = floating, "1" = dwindle and so 
+		/* arg is index into layouts[]; "0" = floating, "1" = dwindle and so
 		 * on and so forth */
 
 		if (a0) arg.ui = (uint32_t)atoi(a0);
@@ -1841,6 +1843,16 @@ dispatch_action(const char *action, const char (*args)[CFG_MAX_STRLEN], int narg
 	if (!strcmp(action, "chvt")) {
 		if (a0) arg.ui = (uint32_t)atoi(a0);
 		chvt(&arg);
+		return;
+	}
+	if (!strcmp(action, "resizehoriz")) {
+		arg.f = a0 ? (float)atof(a0) : 0.05f;
+		resizehoriz(&arg);
+		return;
+	}
+	if (!strcmp(action, "resizevert")) {
+		arg.f = a0 ? (float)atof(a0) : 0.05f;
+		resizevert(&arg);
 		return;
 	}
 
@@ -1882,8 +1894,8 @@ keypress(struct wl_listener *listener, void *data)
 	 * when Shift is held, xkb_state_key_get_syms returns "exclam" (0x21),
 	 * not "1" (0x31), so the config match would silently fail
 	 * Querying level 0 of the active layout gives it the unshifted sym
-	 * regardless of modifier state, which matches what the user wrote in 
-	 * the config 
+	 * regardless of modifier state, which matches what the user wrote in
+	 * the config
 	 */
 	const xkb_keysym_t *base_syms;
 	int base_nsyms = xkb_keymap_key_get_syms_by_level(
@@ -3091,7 +3103,7 @@ tagmon(const Arg *arg)
 
 /*
  * Returns the 0-based index of the lowest set tag bit for monitor m.
- * For single-tag views this is the exact tag. For multi-tag views it 
+ * For single-tag views this is the exact tag. For multi-tag views it
  * picks the lowest bit */
 
 static inline int
@@ -3162,7 +3174,7 @@ dwindle_recalc(DwindleNode *n, int gap)
 	}
 
 	/* Wider than tall -> split left/right; taller -> split top/bottom. */
-	n->split_top = (n->box.height > n->box.width);
+	/* Dont do that, please */
 
 	if (!n->split_top) {
 		int w1 = MAX(1, (int)(n->box.width / 2.0f * n->split_ratio) - gap / 2);
@@ -3360,7 +3372,7 @@ preselect_indicator_box(struct wlr_box target, DwindleEdge edge)
 	case EDGE_RIGHT:  r.width  /= 2; r.x += target.width - r.width; break;
 	case EDGE_TOP:    r.height /= 2; break;
 	case EDGE_BOTTOM: r.height /= 2; r.y += target.height - r.height; break;
-	default: break; 
+	default: break;
 	}
 	return r;
 }
@@ -3603,6 +3615,72 @@ dwindle_move_to_edge(Client *a, Client *b, DwindleEdge edge)
 
 	focusclient(a, 1);
 	printstatus();
+}
+
+/*
+ * Resize the focused tiled client along one axis by nudging the nearest
+ * ancestor split's ratio. split_top: 0 = horizontal split (h/l), 1 =
+ * vertical split (j/k). delta is expressed in "fraction of the split"
+ * space (same convention as dwl's mfact, e.g. ±0.05), not raw split_ratio,
+ * so keybind deltas feel the same as dwl's.
+ */
+static void
+dwindle_resize_axis(int split_top, float delta)
+{
+	Client *sel = focustop(selmon);
+	DwindleNode *leaf, *n;
+	int ti;
+	float frac;
+
+	if (!selmon || !sel || sel->isfloating || sel->isfullscreen
+			|| selmon->lt[selmon->sellt]->arrange != dwindle)
+		return;
+
+	ti = current_tag_idx(selmon);
+	leaf = dwindle_find_leaf(selmon->dwindle_root[ti], sel);
+	if (!leaf)
+		return;
+
+	/* Walk up to the nearest ancestor split matching the requested axis.
+	 * split_top is recomputed every dwindle_recalc() pass based on the
+	 * node's current aspect ratio, so this reflects the live layout. */
+	n = leaf->parent;
+	while (n && n->split_top != split_top)
+		n = n->parent;
+	if (!n)
+		return;
+
+	/* Find which immediate child of n our leaf descends from
+	child = leaf;
+	while (child->parent != n)
+		child = child->parent;
+
+	 children[0]'s share grows with split_ratio, children[1]'s shrinks.
+	 * Flip delta if we're on the [1] side so "positive delta" always
+	 * means "grow the focused window" regardless of which side it's on.
+	if (n->children[0] == child)
+		delta = -delta;*/
+
+	frac = n->split_ratio / 2.0f;
+	frac += delta;
+	if (frac < 0.1f) frac = 0.1f;
+	if (frac > 0.9f) frac = 0.9f;
+	n->split_ratio = frac * 2.0f;
+
+	arrange(selmon);
+	printstatus();
+}
+
+void
+resizehoriz(const Arg *arg)
+{
+	dwindle_resize_axis(0, arg->f);
+}
+
+void
+resizevert(const Arg *arg)
+{
+	dwindle_resize_axis(1, arg->f);
 }
 
 void
@@ -4068,4 +4146,3 @@ main(int argc, char *argv[])
 usage:
 	die("Usage: %s [-v] [-d] [-s startup command] [-c config file]", argv[0]);
 }
-
