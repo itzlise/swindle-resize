@@ -1,4 +1,4 @@
-## Swindle
+## Swindle-resize
 
 > "It's so bad it's not even funny!" -kantiankant, 2026 (creator of og swindle)
 
