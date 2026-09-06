@@ -3,7 +3,7 @@
 > "It's so bad it's not even funny!" -kantiankant, 2026 (creator of og swindle)
 
 
-Swindle is a fork of [dwl](https://codeberg.org/dwl/dwl) that was designed from the start with one goal: to make it feel like the poor man's Hyprland. It has the following:
+Swindle-resize is a fork of [swindle](https://github.com/kantiankant/swindle) which is a fork of [dwl](https://codeberg.org/dwl/dwl) that was designed from the start with one goal: to make it feel like the poor man's Hyprland. It has the following:
 
 * NO cool vfx (yet)
 * nearly NO documentation
