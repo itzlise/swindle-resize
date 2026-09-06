@@ -1,7 +1,7 @@
 ## Swindle-resize
 
 > "It's so bad it's not even funny!" -kantiankant, 2026 (creator of og swindle)
->
+
 > "kantiankant was wrong!" - itzlise, 2026 (creator of this fork)
 
 
