@@ -1061,8 +1061,10 @@ createkeyboardgroup(void)
 
 	/* Prepare an XKB keymap and assign it to the keyboard group. */
 	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-	if (!(keymap = xkb_keymap_new_from_names(context, &(struct xkb_rule_names){.options = NULL},
-				XKB_KEYMAP_COMPILE_NO_FLAGS)))
+	if (!(keymap = xkb_keymap_new_from_names(context, &(struct xkb_rule_names){
+	        .layout = "us, ua",
+	        .options = "grp:alt_shift_toggle",
+	    },  XKB_KEYMAP_COMPILE_NO_FLAGS)))
 		die("failed to compile keymap");
 
 	wlr_keyboard_set_keymap(&group->wlr_group->keyboard, keymap);
@@ -3756,6 +3758,7 @@ unmapnotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->flink);
 	}
 
+	client_surface(c)->data = NULL;
 	wlr_scene_node_destroy(&c->scene->node);
 	printstatus();
 	motionnotify(0, NULL, 0, 0, 0, 0);
