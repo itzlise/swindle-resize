@@ -730,7 +730,15 @@ buttonpress(struct wl_listener *listener, void *data)
 		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
 			wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
 			if (cursor_mode == CurTileDrag) {
-				if (preselect_target && preselect_edge != EDGE_NONE) {
+				Monitor *destmon = xytomon(cursor->x, cursor->y);
+				if (destmon && destmon != grabc->mon) {
+					/* Crossing monitors: grabc isn't a leaf in destmon's
+					 * tree yet, so dwindle_move_to_edge()/swaptiled() would
+					 * silently no-op here. Relocate first; it lands
+					 * bisecting whatever's focused on destmon. */
+					cursor_mode = CurNormal;
+					setmon(grabc, destmon, 0);
+				} else if (preselect_target && preselect_edge != EDGE_NONE) {
 					dwindle_move_to_edge(grabc, preselect_target, preselect_edge);
 				} else {
 					Client *target = tiled_client_at(cursor->x, cursor->y, grabc);
