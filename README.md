@@ -12,9 +12,13 @@ Swindle-resize is a fork of [swindle](https://github.com/kantiankant/swindle) wh
 * nearly NO documentation
 * ZERO good original code
 * only ONE tiling layout (dwindle)
-* NOW added resizing while windows tiled
  
 > Fun fact: I (kantiankant, og creator) actually took some parts of [MangoWM](https://github.com/mangowm/mango) (such as the ext-workspaces implementation). hence why the LICENSE.mangowm exists
+
+## Stuff added
+* resizing while windows tiled
+* dragging windows through monitors while tiled
+
 
 ## Dependencies
 
@@ -53,13 +57,9 @@ Nobody will use this anyway so this line is not needed
 
 read example/config.lua. It should give you a basic idea of how configuring swindle works. 
 
-> note: it's best to copy /etc/swindle/config.lua into XDG_HOME_DIR/.config/swindle/ before you attempt to 
-start swindle because it (swindle) won't start without it
-
 ## Checklist
 
-- [ ] Add /etc/swindle/config.lua as a fallback path if $HOME/.config/swindle/config.lua is not found 
-- [ ] Improve multiple monitor setup
+- [x] Improve multiple monitor setup
 - [ ] Give it sum new name ig 
 
 
